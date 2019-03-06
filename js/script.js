@@ -1,6 +1,36 @@
 window.addEventListener('DOMContentLoaded', () => {
 
-  const cartWrapper = document.querySelector('.cart__wrapper'),
+  const loadContent = async (url, callback) => {
+    await fetch(url)
+      .then(response => response.json())
+      .then(json => createElement(json.goods));
+    callback();
+  }
+
+  function createElement(arr) {
+    const goodsWrapper = document.querySelector('.goods__wrapper');
+
+    arr.forEach(function(item) {
+      let card = document.createElement('div');
+      card.classList.add('goods__item');
+      card.innerHTML = `
+        <img class="goods__img" src="${item.url}" alt="phone">
+        <div class="goods__colors">Доступно цветов: 4</div>
+        <div class="goods__title">
+          ${item.title}
+        </div>
+        <div class="goods__price">
+          <span>${item.price}</span> руб/шт
+        </div>
+        <button class="goods__btn">Добавить в корзину</button>
+        `;
+
+        goodsWrapper.appendChild(card);
+    });
+  }
+
+  loadContent('js/db.json', () => {
+      const cartWrapper = document.querySelector('.cart__wrapper'),
         cart = document.querySelector('.cart'),
         close = document.querySelector('.cart__close'),
         open = document.querySelector('#cart'),
@@ -12,8 +42,6 @@ window.addEventListener('DOMContentLoaded', () => {
         titles = document.querySelectorAll('.goods__title'),
         empty = cartWrapper.querySelector('.empty');
 
-
-//сделать по-нормальному через добавление классов
   function openCart () {
     cart.style.display = 'block';
     document.body.style.overflow = 'hidden';
@@ -34,10 +62,7 @@ window.addEventListener('DOMContentLoaded', () => {
           trigger = item.querySelector('button'),
           removeBtn = document.createElement('div');
 
-
       showConfirm();
-      calcGoods(1);
-
 
       trigger.remove();
       removeBtn.classList.add('goods__item-remove');
@@ -45,30 +70,16 @@ window.addEventListener('DOMContentLoaded', () => {
       item.appendChild(removeBtn);
       cartWrapper.appendChild(item);
 
-
-
-
-      // if (empty) {
-      //   empty.remove();
-      // }
-      if (empty) {
-        empty.style.display = 'none';
-      }
-
+      calcGoods();
       calcTotal();
       removeFromCart();
-
     });
   });
 
-
   function sliceTitles (){
     titles.forEach(function (item) {
-      if (item.textContent.length < 70) {
-        return;
-      } else {
-        const str = item.textContent.slice(0, 71) + '...';
-        // const str = `${item.textContent.slice(0, 71)}...`;
+      if (item.textContent.length >= 59) {
+        const str = `${item.textContent.slice(0, 59)}...`;
         item.textContent = str;
       }
     });
@@ -94,13 +105,13 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
 
-  function calcGoods(i) {
+  function calcGoods() {
     const items = cartWrapper.querySelectorAll('.goods__item');
-    badge.textContent = items.length + i;
+    badge.textContent = items.length;
+    empty.style.display = (items.length === 0) ? 'block' : 'none';
   }
 
   function calcTotal() {
-    //добавить класс на элемент span
     const prices = document.querySelectorAll('.cart__wrapper > .goods__item >.goods__price > span');
     let total = 0;
     prices.forEach(function (item) {
@@ -117,44 +128,11 @@ window.addEventListener('DOMContentLoaded', () => {
     removeBtn.forEach(function (btn) {
       btn.addEventListener('click', () => {
         btn.parentElement.remove();
-        calcGoods(0);
+        calcGoods();
         calcTotal();
-
-
-        
-
-        //лучше создать переменную продуктыВКорзине и сравнивать длину
-        if (totalCost.textContent == 0) {
-
-        empty.style.display = 'block';
-
-          // const empty = document.createElement('div');
-          // empty.textContent = 'Ваша корзина пока пуста';
-          // empty.classList.add('empty');
-          // cartWrapper.appendChild(empty);
-        }
-
       });
-
     });
-
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//поправить адаптив
-
+  });
 });
